@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Climate-aware plant maintenance scheduler with AI chatbot and plant photo identification." />
+  <title>PlantCare Advisor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top" aria-label="PlantCare Advisor home">
+        <span class="logo" aria-hidden="true">🌿</span>
+        <span>
+          <strong>PlantCare Advisor</strong>
+          <small>Climate-aware plant schedules + AI help</small>
+        </span>
+      </a>
+      <div class="top-actions">
+        <span id="connectionStatus" class="status-pill">Ready</span>
+        <button id="btnResetAll" class="btn ghost small-btn" type="button">Reset demo</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="wrap main-grid">
+    <section class="hero card wide">
+      <div class="hero-copy">
+        <p class="eyebrow">Vercel-ready MVP</p>
+        <h1>Tell users how to look after plants based on what they own and where they are.</h1>
+        <p class="muted hero-text">
+          Users log plant types and optional details. The app combines those details with location-based
+          climate signals to create a practical maintenance schedule for watering, pruning, mowing,
+          feeding, pest checks, repotting, mulching and inspections.
+        </p>
+      </div>
+      <div class="hero-panel">
+        <div class="metric">
+          <strong id="metricPlants">0</strong>
+          <span>Plants logged</span>
+        </div>
+        <div class="metric">
+          <strong id="metricTasks">0</strong>
+          <span>Tasks in view</span>
+        </div>
+        <div class="metric">
+          <strong id="metricClimate">No</strong>
+          <span>Climate set</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Step 1</p>
+          <h2>Set location</h2>
+        </div>
+        <span id="locationBadge" class="chip">Not set</span>
+      </div>
+      <p class="muted">
+        Search by town/city. Forecast temperature and rainfall are used to adapt the care schedule.
+      </p>
+
+      <div class="input-row">
+        <input id="locationSearch" class="input" type="search" placeholder="e.g. Cambridge, Stockholm, Boston" autocomplete="off" />
+        <button id="btnSearchLocation" class="btn" type="button">Search</button>
+      </div>
+
+      <button id="btnUseBrowserLocation" class="btn ghost full" type="button">Use browser location</button>
+
+      <div id="locationResults" class="stack" aria-live="polite"></div>
+      <div id="climateSummary" class="callout muted">No climate data loaded yet.</div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Step 2</p>
+          <h2>Add a plant</h2>
+        </div>
+      </div>
+      <p class="muted">
+        Covers lawns, houseplants, trees, hedges, shrubs and unknown plants. Add detail when it materially changes care.
+      </p>
+
+      <label class="field">
+        <span>Plant type</span>
+        <select id="plantType" class="input"></select>
+      </label>
+
+      <label class="field">
+        <span>Display name</span>
+        <input id="plantName" class="input" placeholder="e.g. Front lawn, Kitchen monstera, Beech hedge" />
+      </label>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Placement</span>
+          <select id="placement" class="input">
+            <option value="outdoor">Outdoor</option>
+            <option value="indoor">Indoor</option>
+            <option value="greenhouse">Greenhouse</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Root environment</span>
+          <select id="rootEnv" class="input">
+            <option value="ground">Ground</option>
+            <option value="pot">Pot / container</option>
+            <option value="raised_bed">Raised bed</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Size</span>
+          <select id="plantSize" class="input">
+            <option value="small">Small</option>
+            <option value="medium" selected>Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Age / stage</span>
+          <select id="plantAge" class="input">
+            <option value="new">New / recently planted</option>
+            <option value="young">Young</option>
+            <option value="mature" selected>Mature</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Light</span>
+          <select id="light" class="input">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="bright">Bright</option>
+            <option value="full_sun">Full sun</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Soil / substrate</span>
+          <select id="soil" class="input">
+            <option value="dry">Fast-draining / sandy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="retentive">Retentive / clay-ish</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Notes</span>
+        <input id="plantNotes" class="input" placeholder="Optional: shade, pests, drainage, symptoms, variety..." />
+      </label>
+
+      <div class="button-row">
+        <button id="btnAddPlant" class="btn primary" type="button">Add plant</button>
+        <button id="btnAddSamples" class="btn ghost" type="button">Add examples</button>
+        <button id="btnClearPlants" class="btn danger" type="button">Clear plants</button>
+      </div>
+    </section>
+
+    <section class="card wide">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Your plants</p>
+          <h2>Plant log</h2>
+        </div>
+      </div>
+      <div id="plantList" class="plant-list" aria-live="polite"></div>
+    </section>
+
+    <section class="card wide">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Step 3</p>
+          <h2>Maintenance schedule</h2>
+        </div>
+        <span id="scheduleBadge" class="chip">Not generated</span>
+      </div>
+
+      <div class="toolbar">
+        <label class="field inline">
+          <span>Horizon</span>
+          <select id="scheduleHorizon" class="input">
+            <option value="14">14 days</option>
+            <option value="30" selected>30 days</option>
+            <option value="60">60 days</option>
+            <option value="90">90 days</option>
+          </select>
+        </label>
+
+        <label class="field inline">
+          <span>Plant</span>
+          <select id="filterPlant" class="input">
+            <option value="all">All plants</option>
+          </select>
+        </label>
+
+        <label class="field inline">
+          <span>Task</span>
+          <select id="filterTask" class="input">
+            <option value="all">All tasks</option>
+            <option value="watering">Watering</option>
+            <option value="mowing">Mowing</option>
+            <option value="feeding">Feeding</option>
+            <option value="pruning">Pruning / trimming</option>
+            <option value="mulching">Mulching</option>
+            <option value="repotting">Repotting</option>
+            <option value="pest_check">Pest check</option>
+            <option value="inspection">Inspection</option>
+          </select>
+        </label>
+
+        <button id="btnBuildSchedule" class="btn primary" type="button">Build schedule</button>
+        <button id="btnExportCsv" class="btn ghost" type="button">Export CSV</button>
+      </div>
+
+      <div id="scheduleStats" class="stats-grid"></div>
+      <div id="scheduleList" class="schedule-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">AI</p>
+          <h2>Identify an unknown plant</h2>
+        </div>
+      </div>
+      <p class="muted">
+        Upload a clear image. The AI suggests candidate species, confidence, visible clues and safe immediate care.
+      </p>
+
+      <label class="field">
+        <span>Plant photo</span>
+        <input id="photoInput" class="input" type="file" accept="image/*" />
+      </label>
+
+      <div class="button-row">
+        <button id="btnIdentifyPlant" class="btn primary" type="button">Identify plant</button>
+        <button id="btnUseCandidate" class="btn ghost" type="button" disabled>Add top candidate</button>
+      </div>
+
+      <div id="identifyOutput" class="stack"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">AI</p>
+          <h2>Plant-care chatbot</h2>
+        </div>
+      </div>
+      <p class="muted">
+        Ask about symptoms, watering, pruning, pests, plant ID follow-ups, or how the schedule was built.
+      </p>
+
+      <div id="chatLog" class="chat-log" aria-live="polite"></div>
+      <div class="input-row">
+        <input id="chatInput" class="input" placeholder="e.g. Why are my leaves yellow?" />
+        <button id="btnSendChat" class="btn primary" type="button">Send</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <p class="muted">
+      Prototype disclaimer: schedules are conservative guidance. Always adapt to actual soil moisture,
+      drainage, exposure, species, pests, disease pressure and local regulations.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

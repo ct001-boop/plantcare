@@ -1,0 +1,21 @@
+{
+  "name": "plantcare-advisor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Climate-aware plant maintenance scheduler with AI chatbot and image plant identification, deployable on Vercel.",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "plants",
+    "gardening",
+    "vercel",
+    "openai",
+    "climate"
+  ],
+  "license": "UNLICENSED"
+}
